@@ -16,6 +16,18 @@ async function cloneMirror(cloneUrl, dir, user, pwd) {
             remote,
             dir
         ]);
+
+    await setRemoteUrl(dir, 'origin', cloneUrl);
+}
+
+async function setRemoteUrl(dir, remoteName, remoteUrl) {
+    await simpleGit(dir)
+        .raw([
+            'remote',
+            'set-url',
+            remoteName,
+            remoteUrl
+        ]);
 }
 
 function insertCredentialsInCloneUrl(originalCloneUrl, user, pwd) {
