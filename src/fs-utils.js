@@ -20,6 +20,26 @@ async function fileExists(path) {
     });
 };
 
+async function dirExists(path) {
+    return new Promise((resolve, reject) => {
+        try {
+            fs.stat(path, (error, stats) => {
+                if (error) {
+                    if (error.code == 'ENOENT') {
+                        resolve(false);
+                    } else {
+                        reject(error);
+                    }
+                } else {
+                    resolve(stats.isDirectory());
+                }
+            });
+        } catch (err) {
+            reject(err);
+        }
+    });
+};
+
 async function readFile(path, opts = 'utf8') {
     return new Promise((res, rej) => {
         fs.readFile(path, opts, (err, data) => {
@@ -60,5 +80,6 @@ module.exports = {
     fileExists,
     readFile,
     writeFile,
-    readDir
+    readDir,
+    dirExists
 };

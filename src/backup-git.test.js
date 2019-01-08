@@ -1,12 +1,7 @@
 const backupGit = require('./backup-git');
 
-test('insertCredentialsInCloneUrl', () => {
-    expect(backupGit.insertCredentialsInCloneUrl('https://ulaval@bitbucket.org/ulaval/pul-services-test.git', 'myuser', 'mypwd'))
-        .toBe('https://myuser:mypwd@bitbucket.org/ulaval/pul-services-test.git');
+test('checkBackupDir', async () => {
+    await expect(backupGit.checkBackupDir({})).rejects.toThrow();
 
-    expect(backupGit.insertCredentialsInCloneUrl('https://ulaval:1234@bitbucket.org/ulaval/pul-services-test.git', 'myuser', 'mypwd'))
-        .toBe('https://myuser:mypwd@bitbucket.org/ulaval/pul-services-test.git');
-
-    expect(backupGit.insertCredentialsInCloneUrl('https://bitbucket.org/ulaval/pul-services-test.git', 'myuser', 'mypwd'))
-        .toBe('https://myuser:mypwd@bitbucket.org/ulaval/pul-services-test.git');
+    await expect(backupGit.checkBackupDir({ backupDir: '1234' })).rejects.toThrow(new Error(`The directory "1234" doesn't exists.`));
 });

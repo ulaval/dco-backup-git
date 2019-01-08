@@ -1,5 +1,8 @@
-const utils = require('./utils');
+const path = require('path');
 const axios = require('axios');
+const fsUtils = require('./fs-utils');
+const gitUtils = require('./git-utils');
+
 
 // See https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html
 const BITBUCKET_OAUTH_USER = 'x-token-auth';
@@ -8,8 +11,7 @@ main();
 
 async function main() {
 
-    const config = JSON.parse(await utils.readFile('config.json'));
-    config.partial = process.argv.findIndex(value => value == 'partial') >= 0 ? true : config.partial;
+    const config = await loadAndCheckConfig();
 
     config.bitbucketToken = await getBitbucketToken(config);
     const repositories = await fetchBitbucketRepositories(config);
@@ -19,6 +21,25 @@ async function main() {
     console.info('Backup succeeded.');
 }
 
+async function loadAndCheckConfig() {
+    const config = JSON.parse(await fsUtils.readFile('config.json'));
+    config.partial = process.argv.findIndex(value => value == 'partial') >= 0 ? true : config.partial;
+
+    await checkBackupDir(config);
+
+    return config;
+}
+
+async function checkBackupDir(config) {
+    if (!config.backupDir) {
+        throw new Error('The backupDir must be provided.');
+    }
+
+    if (!await fsUtils.dirExists(config.backupDir)) {
+        throw new Error(`The directory "${config.backupDir}" doesn't exists.`);
+    }
+}
+
 async function backupBitbucketRepositories(config, repositories) {
     for (const repository of repositories) {
         await backupBitbucketRepository(config, repository);
@@ -26,9 +47,19 @@ async function backupBitbucketRepositories(config, repositories) {
 }
 
 async function backupBitbucketRepository(config, repository) {
-    console.info(`Backing ${repository.owner} / ${repository.project} / ${repository.name} / ${repository.cloneUrl}...`);
+    const repoBackupDir = path.join(config.backupDir, repository.name + '.git');
 
-    const cloneUrl = insertCredentialsInCloneUrl(repository.cloneUrl, BITBUCKET_OAUTH_USER, config.bitbucketToken);
+    console.info(`Backing ${repository.owner} / ${repository.project} / ${repository.name} / ${repository.cloneUrl} / ${repoBackupDir}...`);
+
+    if (await fsUtils.dirExists(repoBackupDir)) {
+        doRemoteUpdate();
+    } else {
+        await gitUtils.cloneMirror(repository.cloneUrl, repoBackupDir, BITBUCKET_OAUTH_USER, config.bitbucketToken);
+    }
+}
+
+async function doRemoteUpdate() {
+    console.info('Updating existing clone...');
 }
 
 async function fetchBitbucketRepositories(config, nextUrl = '') {
@@ -101,6 +132,8 @@ function cloneUrl(cloneLinks) {
 
 async function getBitbucketToken(config) {
 
+    console.info('Fetching OAuth 2 token for BitBucket...');
+
     const response = await axios.post('https://bitbucket.org/site/oauth2/access_token',
         'grant_type=client_credentials',
         {
@@ -113,9 +146,11 @@ async function getBitbucketToken(config) {
             },
         });
 
+    console.info('OAuth 2 BitBucket token ok.')
     return response.data.access_token;
 }
 
 module.exports = {
-    insertCredentialsInCloneUrl
+    insertCredentialsInCloneUrl,
+    checkBackupDir
 };
