@@ -17,5 +17,8 @@
         "node": ">= 8.6.0",
         "npm": ">= 5.6.0"
     },
-    "license": "Propriété de l'Université Laval"
+    "license": "Propriété de l'Université Laval",
+    "jest": {
+        "rootDir": "src"
+    }
 }

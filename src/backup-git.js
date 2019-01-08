@@ -95,18 +95,6 @@ async function fetchBitbucketRepositories(config, nextUrl = '') {
     return repositories;
 }
 
-function insertCredentialsInCloneUrl(originalCloneUrl, user, pwd) {
-    const regex = /(\w+:\/\/)(?:[\w:]+@)?(.*)/g;
-
-    const matches = regex.exec(originalCloneUrl);
-
-    if (!matches) {
-        throw new Error(`The clone url ${originalCloneUrl} is not recognized`);
-    }
-
-    return matches[1] + user + ':' + pwd + '@' + matches[2];
-}
-
 /*
 For example:
 "clone": [
@@ -151,6 +139,5 @@ async function getBitbucketToken(config) {
 }
 
 module.exports = {
-    insertCredentialsInCloneUrl,
     checkBackupDir
 };
