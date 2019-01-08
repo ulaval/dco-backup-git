@@ -4,16 +4,16 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "backup-git fast",
+            "label": "default",
             "type": "shell",
-            "command": "node src/backup-git.js",
+            "command": "node src/backup-git.js partial",
             "problemMatcher": [],
             "presentation": {
                 "clear": true
             }
         },
         {
-            "label": "backup-git",
+            "label": "alt1",
             "type": "shell",
             "command": "node src/backup-git.js",
             "problemMatcher": [],

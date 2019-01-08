@@ -1,5 +1,4 @@
 const utils = require('./utils');
-const fs = require('fs');
 const axios = require('axios');
 
 // See https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html
@@ -10,6 +9,7 @@ main();
 async function main() {
 
     const config = JSON.parse(await utils.readFile('config.json'));
+    config.partial = process.argv.findIndex(value => value == 'partial') >= 0 ? true : config.partial;
 
     config.bitbucketToken = await getBitbucketToken(config);
     const repositories = await fetchBitbucketRepositories(config);
@@ -56,8 +56,8 @@ async function fetchBitbucketRepositories(config, nextUrl = '') {
             }
         });
 
-    if (response.data.next && !config.fast) {
-        repositories = repositories.concat(await fetchBitbucketRepositories(bitbucketOwner, bitbucketToken, response.data.next));
+    if (response.data.next && !config.partial) {
+        repositories = repositories.concat(await fetchBitbucketRepositories(config, response.data.next));
     }
 
     return repositories;
