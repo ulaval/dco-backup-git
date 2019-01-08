@@ -1,6 +1,9 @@
 const fs = require('fs');
 const axios = require('axios');
 
+// See https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html
+const BITBUCKET_OAUTH_USER = 'x-token-auth';
+
 main();
 
 async function main() {
@@ -24,7 +27,7 @@ async function backupBitbucketRepositories(config, repositories) {
 async function backupBitbucketRepository(config, repository) {
     console.info(`Backing ${repository.owner} / ${repository.project} / ${repository.name} / ${repository.cloneUrl}...`);
 
-    const cloneUrl = insertCredentialsInCloneUrl(repository.cloneUrl, 'x-token-auth', config.bitbucketToken);
+    const cloneUrl = insertCredentialsInCloneUrl(repository.cloneUrl, BITBUCKET_OAUTH_USER, config.bitbucketToken);
 }
 
 async function fetchBitbucketRepositories(config, nextUrl = '') {
@@ -42,8 +45,6 @@ async function fetchBitbucketRepositories(config, nextUrl = '') {
         },
     });
 
-    writeFile('test.json', JSON.stringify(response.data, null, 2));
-
     let repositories = response.data.values
         .map(repo => {
             return {
@@ -53,7 +54,7 @@ async function fetchBitbucketRepositories(config, nextUrl = '') {
                 cloneUrl: cloneUrl(repo.links.clone)
             }
         });
-    
+
     if (response.data.next && !config.fast) {
         repositories = repositories.concat(await fetchBitbucketRepositories(bitbucketOwner, bitbucketToken, response.data.next));
     }
@@ -61,9 +62,16 @@ async function fetchBitbucketRepositories(config, nextUrl = '') {
     return repositories;
 }
 
-// See https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html
 function insertCredentialsInCloneUrl(originalCloneUrl, user, pwd) {
-    /\w+:\/\/(\w+)@(.*)/g
+    const regex = /(\w+:\/\/)(?:[\w:]+@)?(.*)/g;
+
+    const matches = regex.exec(originalCloneUrl);
+
+    if (!matches) {
+        throw new Error(`The clone url ${originalCloneUrl} is not recognized`);
+    }
+
+    return matches[1] + user + ':' + pwd + '@' + matches[2];
 }
 
 /*
@@ -92,7 +100,7 @@ function cloneUrl(cloneLinks) {
 
 async function getBitbucketToken(config) {
 
-    const response = await axios.post('https://bitbucket.org/site/oauth2/access_token', 
+    const response = await axios.post('https://bitbucket.org/site/oauth2/access_token',
         'grant_type=client_credentials',
         {
             headers: {
@@ -118,7 +126,7 @@ async function fileExists(path) {
                         reject(error);
                     }
                 } else {
-                    resolve (stats.isFile());
+                    resolve(stats.isFile());
                 }
             });
         } catch (err) {
@@ -162,3 +170,7 @@ async function readDir(path) {
         });
     });
 }
+
+module.exports = {
+    insertCredentialsInCloneUrl
+};

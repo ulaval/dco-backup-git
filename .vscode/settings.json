@@ -1,0 +1,16 @@
+{
+    "editor.detectIndentation": false,
+    "files.trimTrailingWhitespace": true,
+    "editor.tabSize": 4,
+    "files.insertFinalNewline": true,
+    "files.exclude": {
+        "**/.github/": true,
+    },
+    "search.exclude": {
+        "package-lock.json": true,
+    },
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    }
+}
