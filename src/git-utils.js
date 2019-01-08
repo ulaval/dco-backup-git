@@ -32,6 +32,8 @@ async function remoteUpdate(cloneUrl, dir, user, pwd) {
             'remote',
             'update'
         ])
+
+    await setRemoteUrl(dir, 'origin', cloneUrl);
 }
 
 async function setRemoteUrl(dir, remoteName, remoteUrl) {
