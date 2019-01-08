@@ -1,5 +1,6 @@
 const path = require('path');
 const axios = require('axios');
+const logger = require('./logger');
 const fsUtils = require('./fs-utils');
 const gitUtils = require('./git-utils');
 
@@ -11,6 +12,8 @@ main();
 
 async function main() {
 
+    const chrono = logger.startChrono();
+
     const config = await loadAndCheckConfig();
 
     config.bitbucketToken = await getBitbucketToken(config);
@@ -18,10 +21,12 @@ async function main() {
 
     await backupBitbucketRepositories(config, repositories);
 
-    console.info('Backup succeeded.');
+    logger.success(`Backup succeeded in ${logger.stopChrono(chrono)}.`);
 }
 
 async function loadAndCheckConfig() {
+    logger.info('Loading configuration...');
+
     const config = JSON.parse(await fsUtils.readFile('config.json'));
     config.partial = process.argv.findIndex(value => value == 'partial') >= 0 ? true : config.partial;
 
@@ -41,6 +46,8 @@ async function checkBackupDir(config) {
 }
 
 async function backupBitbucketRepositories(config, repositories) {
+    logger.info(`Starting backup of ${repositories.length} repositories from BitBucket...`);
+
     for (const repository of repositories) {
         await backupBitbucketRepository(config, repository);
     };
@@ -49,8 +56,6 @@ async function backupBitbucketRepositories(config, repositories) {
 async function backupBitbucketRepository(config, repository) {
     const repoBackupDir = path.join(config.backupDir, repository.name + '.git');
 
-    console.info(`Backing ${repository.owner} / ${repository.project} / ${repository.name} / ${repository.cloneUrl} / ${repoBackupDir}...`);
-
     if (await fsUtils.dirExists(repoBackupDir)) {
         await gitUtils.remoteUpdate(repository.cloneUrl, repoBackupDir, BITBUCKET_OAUTH_USER, config.bitbucketToken);
     } else {
@@ -58,15 +63,11 @@ async function backupBitbucketRepository(config, repository) {
     }
 }
 
-async function doRemoteUpdate() {
-    console.info('Updating existing clone...');
-}
-
 async function fetchBitbucketRepositories(config, nextUrl = '') {
     if (!nextUrl) {
-        console.info(`Fetching bitbucket repositories for ${config.bitbucketOwner}...`);
+        logger.info(`Fetching bitbucket repositories for ${config.bitbucketOwner}...`);
     } else {
-        console.info(`Fetching ${nextUrl}...`);
+        logger.info(`Fetching ${nextUrl}...`);
     }
 
     const url = nextUrl || `https://api.bitbucket.org/2.0/repositories/${config.bitbucketOwner}/`;
@@ -132,7 +133,7 @@ function cloneUrl(cloneLinks) {
 
 async function getBitbucketToken(config) {
 
-    console.info('Fetching OAuth 2 token for BitBucket...');
+    logger.info('Fetching OAuth 2 token for BitBucket...');
 
     const response = await axios.post('https://bitbucket.org/site/oauth2/access_token',
         'grant_type=client_credentials',
@@ -146,7 +147,6 @@ async function getBitbucketToken(config) {
             },
         });
 
-    console.info('OAuth 2 BitBucket token ok.')
     return response.data.access_token;
 }
 
