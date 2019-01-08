@@ -3,7 +3,7 @@ const simpleGit = require('simple-git/promise');
 // See https://github.com/steveukx/git-js
 
 async function cloneMirror(cloneUrl, dir, user, pwd) {
-    const remote = insertCredentialsInCloneUrl(cloneUrl, user, pwd);
+    const remoteUrl = insertCredentialsInCloneUrl(cloneUrl, user, pwd);
     const fakeRemote = insertCredentialsInCloneUrl(cloneUrl, user, 'xxx');
 
     console.info(`Running: git clone --mirror ${fakeRemote} ${dir}`);
@@ -13,11 +13,25 @@ async function cloneMirror(cloneUrl, dir, user, pwd) {
         .raw([
             'clone',
             '--mirror',
-            remote,
+            remoteUrl,
             dir
         ]);
 
     await setRemoteUrl(dir, 'origin', cloneUrl);
+}
+
+async function remoteUpdate(cloneUrl, dir, user, pwd) {
+    console.info(`${dir}> git remote update`);
+
+    const remoteUrl = insertCredentialsInCloneUrl(cloneUrl, user, pwd);
+
+    await setRemoteUrl(dir, 'origin', remoteUrl);
+
+    await simpleGit(dir)
+        .raw([
+            'remote',
+            'update'
+        ])
 }
 
 async function setRemoteUrl(dir, remoteName, remoteUrl) {
@@ -43,6 +57,7 @@ function insertCredentialsInCloneUrl(originalCloneUrl, user, pwd) {
 }
 
 module.exports = {
-    cloneMirror: cloneMirror,
+    cloneMirror,
+    remoteUpdate,
     insertCredentialsInCloneUrl
 }

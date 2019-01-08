@@ -52,7 +52,7 @@ async function backupBitbucketRepository(config, repository) {
     console.info(`Backing ${repository.owner} / ${repository.project} / ${repository.name} / ${repository.cloneUrl} / ${repoBackupDir}...`);
 
     if (await fsUtils.dirExists(repoBackupDir)) {
-        doRemoteUpdate();
+        await gitUtils.remoteUpdate(repository.cloneUrl, repoBackupDir, BITBUCKET_OAUTH_USER, config.bitbucketToken);
     } else {
         await gitUtils.cloneMirror(repository.cloneUrl, repoBackupDir, BITBUCKET_OAUTH_USER, config.bitbucketToken);
     }
