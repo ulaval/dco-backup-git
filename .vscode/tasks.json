@@ -6,7 +6,7 @@
         {
             "label": "backup-git fast",
             "type": "shell",
-            "command": "node backup-git.js",
+            "command": "node src/backup-git.js",
             "problemMatcher": [],
             "presentation": {
                 "clear": true
@@ -15,7 +15,7 @@
         {
             "label": "backup-git",
             "type": "shell",
-            "command": "node backup-git.js",
+            "command": "node src/backup-git.js",
             "problemMatcher": [],
             "presentation": {
                 "clear": true

@@ -4,7 +4,7 @@
     "author": "Frédéric Poliquin <frederic.poliquin@dti.ulaval.ca>",
     "private": true,
     "scripts": {
-        "backup-git": "node backup-git.js"
+        "backup-git": "node src/backup-git.js"
     },
     "dependencies": {
         "axios": "^0.18.0"
