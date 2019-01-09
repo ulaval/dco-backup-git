@@ -99,7 +99,7 @@ test('loadAndCheckConfig', async () => {
     await expect(backupGit.loadAndCheckConfig(['-backupDir=bad'])).rejects.toThrow(new Error(`The directory "bad" doesn't exists.`));
     await expect((await backupGit.loadAndCheckConfig(['-backupDir=good'])).backupDir).toBe('good');
     await expect((await backupGit.loadAndCheckConfig(['-conf=config.json'])).backupDir).toBe('backup');
-    await expect(backupGit.loadAndCheckConfig(['-backupDir=good', '-bitbucket'])).rejects.toThrow(new Error('The bitbucket* parameters are mandatory to backup BitBucket.'));
+    await expect(backupGit.loadAndCheckConfig(['-backupDir=good', '-bitbucket'])).rejects.toThrow(new Error('The bitbucketOwner, bitbucketClientId, bitbucketClientSecret parameters are mandatory to backup BitBucket.'));
     await expect(await backupGit.loadAndCheckConfig(['-backupDir=good', '-bitbucket', '-bitbucketOwner=a', '-bitbucketClientId=b', '-bitbucketClientSecret=c'])).toBeTruthy();
     await expect(backupGit.loadAndCheckConfig(['-backupDir=good', '-github'])).rejects.toThrow(new Error('The parameter githubOrg is mandatory to backup github.'));
     await expect(await backupGit.loadAndCheckConfig(['-backupDir=good', '-github', '-githubOrg=a'])).toBeTruthy();

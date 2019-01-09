@@ -45,7 +45,6 @@ async function loadAndCheckConfig(args) {
     setConfigParameter(config, args, 'backupDir', 'str');
 
     setConfigParameter(config, args, 'partial', 'bool', false);
-    setConfigParameter(config, args, 'fake', 'bool', false);
 
     setConfigParameter(config, args, 'github', 'bool', false);
     setConfigParameter(config, args, 'githubOrg', 'str');
@@ -62,8 +61,17 @@ async function loadAndCheckConfig(args) {
     }
 
     if (config.bitbucket && (!config.bitbucketOwner || !config.bitbucketClientId || !config.bitbucketClientSecret)) {
-        throw new Error('The bitbucket* parameters are mandatory to backup BitBucket.');
+        throw new Error('The bitbucketOwner, bitbucketClientId, bitbucketClientSecret parameters are mandatory to backup BitBucket.');
     }
+
+    logger.info(`Effective config:
+    - backupDir: ${config.backupDir}
+    - partial: ${config.partial}
+    - github: ${config.github}
+    - githubOrg: ${config.githubOrg}
+    - bitbucket: ${config.bitbucket}
+    - bitbucketClientId: ${config.bitbucketClientId}
+    - bitbucketClientSecret: xxx`)
 
     return config;
 }
