@@ -42,7 +42,6 @@ async function loadAndCheckConfig(args) {
         Object.assign(config, JSON.parse(await fsUtils.readFile(conf)));
     }
 
-    console.info(config);
     setConfigParameter(config, args, 'backupDir', 'str');
 
     setConfigParameter(config, args, 'partial', 'bool', false);
@@ -131,11 +130,15 @@ async function fetchGithubRepositories(config) {
     const response = await axios.get(url);
 
     return response.data.map(repo => {
-        return {
+        const info = {
             owner: config.githubOrg,
             name: repo.name,
             cloneUrl: repo.clone_url
-        }
+        };
+
+        validateRepoInfo(info);
+
+        return info;
     });
 }
 
@@ -156,12 +159,15 @@ async function fetchBitbucketRepositories(config, nextUrl = '') {
 
     let repositories = response.data.values
         .map(repo => {
-            return {
+            const info = {
                 owner: repo.owner.username,
-                project: repo.project.key,
                 name: repo.name,
                 cloneUrl: cloneUrl(repo.links.clone)
-            }
+            };
+
+            validateRepoInfo(info);
+
+            return info;
         });
 
     if (response.data.next) {
@@ -171,6 +177,19 @@ async function fetchBitbucketRepositories(config, nextUrl = '') {
     return repositories;
 }
 
+function validateRepoInfo(info) {
+    if (!info.owner) {
+        throw new Error(`The api response did not provide any owner info for ${JSON.stringify(info, null, 2)}`);
+    }
+
+    if (!info.name) {
+        throw new Error(`The api response did not provide any name for ${JSON.stringify(info, null, 2)}`);
+    }
+
+    if (!info.cloneUrl) {
+        throw new Error(`The api response did not provide any cloneUrl info for ${JSON.stringify(info, null, 2)}`);
+    }
+}
 /*
 For example:
 "clone": [
@@ -215,7 +234,6 @@ async function getBitbucketToken(config) {
 }
 
 module.exports = {
-    checkBackupDir,
     loadAndCheckConfig,
     main
 };
