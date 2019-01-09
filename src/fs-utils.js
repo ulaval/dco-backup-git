@@ -76,10 +76,27 @@ async function readDir(path) {
     });
 }
 
+async function mkDir(path, options) {
+    return new Promise((res, rej) => {
+        fs.mkdir(path, options, err => {
+            if (err) {
+                if (err.code == 'EEXIST') {
+                    res(false);
+                } else {
+                    rej(err);
+                }
+            } else {
+                res(true);
+            }
+        })
+    })
+}
+
 module.exports = {
     fileExists,
     readFile,
     writeFile,
     readDir,
-    dirExists
+    dirExists,
+    mkDir
 };

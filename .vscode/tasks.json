@@ -6,7 +6,7 @@
         {
             "label": "default",
             "type": "shell",
-            "command": "node src/backup-git.js partial",
+            "command": "node src/main.js -conf=config.json -partial",
             "problemMatcher": [],
             "presentation": {
                 "clear": true
@@ -15,7 +15,7 @@
         {
             "label": "alt1",
             "type": "shell",
-            "command": "node src/backup-git.js",
+            "command": "node src/main.js -conf=config.json",
             "problemMatcher": [],
             "presentation": {
                 "clear": true

@@ -52,6 +52,10 @@ async function setRemoteUrl(dir, remoteName, remoteUrl) {
 }
 
 function insertCredentialsInCloneUrl(originalCloneUrl, user, pwd) {
+    if (!user) {
+        return originalCloneUrl;
+    }
+
     const regex = /(\w+:\/\/)(?:[\w:]+@)?(.*)/g;
 
     const matches = regex.exec(originalCloneUrl);

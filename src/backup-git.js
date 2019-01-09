@@ -8,39 +8,83 @@ const gitUtils = require('./git-utils');
 // See https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html
 const BITBUCKET_OAUTH_USER = 'x-token-auth';
 
-main().catch(e => {
-    logger.error('Backup failed.', e);
-});
 
-async function main() {
+async function main(argv) {
 
     const chrono = logger.startChrono();
 
-    const config = await loadAndCheckConfig();
+    const config = await loadAndCheckConfig(argv);
 
     if (config.bitbucket) {
         config.bitbucketToken = await getBitbucketToken(config);
         const repositories = await fetchBitbucketRepositories(config);
 
-        await backupBitbucketRepositories(config, repositories);
+        await backupRepositories(config, repositories, 'bitbucket', BITBUCKET_OAUTH_USER, config.bitbucketToken);
     }
 
     if (config.github) {
-        await fetchGithubRepositories(config);
+        const repositories = await fetchGithubRepositories(config);
+
+        await backupRepositories(config, repositories, 'github');
     }
 
     logger.success(`Backup succeeded in ${logger.stopChrono(chrono)}.`);
 }
 
-async function loadAndCheckConfig() {
+async function loadAndCheckConfig(args) {
     logger.info('Loading configuration...');
 
-    const config = JSON.parse(await fsUtils.readFile('config.json'));
-    config.partial = process.argv.findIndex(value => value == 'partial') >= 0 ? true : config.partial;
+    const config = {};
+
+    setConfigParameter(config, args, 'conf', 'array', []);
+
+    for (const conf of config.conf) {
+        Object.assign(config, JSON.parse(await fsUtils.readFile(conf)));
+    }
+
+    console.info(config);
+    setConfigParameter(config, args, 'backupDir', 'str');
+
+    setConfigParameter(config, args, 'partial', 'bool', false);
+    setConfigParameter(config, args, 'fake', 'bool', false);
+
+    setConfigParameter(config, args, 'github', 'bool', false);
+    setConfigParameter(config, args, 'githubOrg', 'str');
+
+    setConfigParameter(config, args, 'bitbucket', 'bool', false);
+    setConfigParameter(config, args, 'bitbucketOwner', 'str');
+    setConfigParameter(config, args, 'bitbucketClientId', 'str');
+    setConfigParameter(config, args, 'bitbucketClientSecret', 'str');
 
     await checkBackupDir(config);
 
+    if (config.github && !config.githubOrg) {
+        throw new Error('The parameter githubOrg is mandatory to backup github.');
+    }
+
+    if (config.bitbucket && (!config.bitbucketOwner || !config.bitbucketClientId || !config.bitbucketClientSecret)) {
+        throw new Error('The bitbucket* parameters are mandatory to backup BitBucket.');
+    }
+
     return config;
+}
+
+function setConfigParameter(config, argv, paramName, type, defaultVal) {
+    argv.filter(value => value.startsWith(`-${paramName}${type == 'bool' ? '' : '='}`))
+        .forEach(arg => {
+            if (type === 'bool') {
+                config[paramName] = true;
+            } else if (type === 'str') {
+                config[paramName] = arg.substring(paramName.length + 2);
+            } else if (type === 'array') {
+                config[paramName] = config[paramName] || [];
+                config[paramName].push(arg.substring(paramName.length + 2));
+            }
+        })
+
+    if (!config[paramName]) {
+        config[paramName] = defaultVal;
+    }
 }
 
 async function checkBackupDir(config) {
@@ -53,21 +97,29 @@ async function checkBackupDir(config) {
     }
 }
 
-async function backupBitbucketRepositories(config, repositories) {
-    logger.info(`Starting backup of ${repositories.length} repositories from BitBucket...`);
+async function backupRepositories(config, repositories, source, user, pwd) {
+    logger.info(`Starting backup of ${repositories.length} repositories from ${source}${config.partial ? ' in partial mode' : ''}...`);
+
+    if (config.partial) {
+        repositories = repositories.slice(0, 5);
+    }
 
     for (const repository of repositories) {
-        await backupBitbucketRepository(config, repository);
+        await backupRepository(config, repository, source, user, pwd);
     };
 }
 
-async function backupBitbucketRepository(config, repository) {
-    const repoBackupDir = path.join(config.backupDir, repository.name + '.git');
+async function backupRepository(config, repository, source, user, pwd) {
+    const sourceDir = path.join(config.backupDir, source)
+
+    await fsUtils.mkDir(sourceDir);
+
+    const repoBackupDir = path.join(config.backupDir, source, repository.name + '.git');
 
     if (await fsUtils.dirExists(repoBackupDir)) {
-        await gitUtils.remoteUpdate(repository.cloneUrl, repoBackupDir, BITBUCKET_OAUTH_USER, config.bitbucketToken);
+        await gitUtils.remoteUpdate(repository.cloneUrl, repoBackupDir, user, pwd);
     } else {
-        await gitUtils.cloneMirror(repository.cloneUrl, repoBackupDir, BITBUCKET_OAUTH_USER, config.bitbucketToken);
+        await gitUtils.cloneMirror(repository.cloneUrl, repoBackupDir, user, pwd);
     }
 }
 
@@ -76,13 +128,15 @@ async function fetchGithubRepositories(config) {
 
     const url = `https://api.github.com/orgs/${config.githubOrg}/repos`;
 
-    const response = await axios.get(url, {
-        headers: {
-            'Authorization': `Bearer ${config.bitbucketToken}`
-        },
-    });
+    const response = await axios.get(url);
 
-    console.info(JSON.stringify(response.data, null, 2));
+    return response.data.map(repo => {
+        return {
+            owner: config.githubOrg,
+            name: repo.name,
+            cloneUrl: repo.clone_url
+        }
+    });
 }
 
 async function fetchBitbucketRepositories(config, nextUrl = '') {
@@ -110,7 +164,7 @@ async function fetchBitbucketRepositories(config, nextUrl = '') {
             }
         });
 
-    if (response.data.next && !config.partial) {
+    if (response.data.next) {
         repositories = repositories.concat(await fetchBitbucketRepositories(config, response.data.next));
     }
 
@@ -161,5 +215,7 @@ async function getBitbucketToken(config) {
 }
 
 module.exports = {
-    checkBackupDir
+    checkBackupDir,
+    loadAndCheckConfig,
+    main
 };
