@@ -8,7 +8,9 @@ const gitUtils = require('./git-utils');
 // See https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html
 const BITBUCKET_OAUTH_USER = 'x-token-auth';
 
-main();
+main().catch(e => {
+    logger.error('Backup failed.', e);
+});
 
 async function main() {
 
@@ -16,10 +18,16 @@ async function main() {
 
     const config = await loadAndCheckConfig();
 
-    config.bitbucketToken = await getBitbucketToken(config);
-    const repositories = await fetchBitbucketRepositories(config);
+    if (config.bitbucket) {
+        config.bitbucketToken = await getBitbucketToken(config);
+        const repositories = await fetchBitbucketRepositories(config);
 
-    await backupBitbucketRepositories(config, repositories);
+        await backupBitbucketRepositories(config, repositories);
+    }
+
+    if (config.github) {
+        await fetchGithubRepositories(config);
+    }
 
     logger.success(`Backup succeeded in ${logger.stopChrono(chrono)}.`);
 }
@@ -61,6 +69,20 @@ async function backupBitbucketRepository(config, repository) {
     } else {
         await gitUtils.cloneMirror(repository.cloneUrl, repoBackupDir, BITBUCKET_OAUTH_USER, config.bitbucketToken);
     }
+}
+
+async function fetchGithubRepositories(config) {
+    logger.info(`Fetching Github repositories for ${config.githubOrg}...`);
+
+    const url = `https://api.github.com/orgs/${config.githubOrg}/repos`;
+
+    const response = await axios.get(url, {
+        headers: {
+            'Authorization': `Bearer ${config.bitbucketToken}`
+        },
+    });
+
+    console.info(JSON.stringify(response.data, null, 2));
 }
 
 async function fetchBitbucketRepositories(config, nextUrl = '') {
