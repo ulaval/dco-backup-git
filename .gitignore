@@ -1,4 +1,4 @@
+dist
 node_modules
 backup
 config.json
-test.json
