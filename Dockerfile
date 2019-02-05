@@ -1,6 +1,6 @@
 # See https://malcoded.com/posts/angular-docker
 # Stage 1 - Build
-FROM node:8.15.0-alpine as node
+FROM node:8.15.0-alpine as buildContainer
 
 WORKDIR /usr/src/app
 
@@ -16,9 +16,9 @@ RUN npm run test
 RUN npm run build
 
 # Stage 2 - Prepare for execution
-FROM node:8.11.2-alpine
+FROM node:8.15.0-alpine
 
-COPY --from=node /usr/src/app/dist/ /usr/src/app
+COPY --from=buildContainer /usr/src/app/dist/ /usr/src/app
 
 WORKDIR /usr/src/app
 
