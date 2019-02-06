@@ -1,6 +1,6 @@
 # See https://malcoded.com/posts/angular-docker
 # Stage 1 - Build
-FROM node:8.15.0-alpine123 as buildContainer
+FROM node:8.15.0-alpine as buildContainer
 
 WORKDIR /usr/src/app
 
