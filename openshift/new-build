@@ -1,6 +1,6 @@
 #!/bin/sh
-# Script to initialize a namespace in OpenShift.
-# Ex: init-namespace.sh <namespace> <gitRef> [token]
+# Script to initialize a build of this code in Openshift.
+# Ex: ./new-build <server> <namespace> <gitRef> [token]
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -24,6 +24,8 @@ onError()
 echo "Adding common objects..."
 oc new-app -s=$server -n=$namespace --token=$token \
     -f=templates/build.yaml --name=$objectName -l=sys=dti-backup-git,gitref=$gitRef -p=NAME=$objectName -p=GIT_REF=$gitRef || onError
+
+oc logs -s=$server -n=$namespace bc/dti-backup-git-$gitRef --follow || onError
 
 echo -e "${GREEN}Script succeeded.${NC}"
 

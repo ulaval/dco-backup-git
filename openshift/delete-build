@@ -1,5 +1,5 @@
 #!/bin/sh
-# Script permettant de détruire un build
+# Allows to clean-up the resources allocated with the new-build script.
 # Ex: delete-build.cmd <server> <namespace> <gitRef> [token]
 
 RED='\033[0;31m'
