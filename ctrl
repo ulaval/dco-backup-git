@@ -1,0 +1,38 @@
+#!/bin/sh
+# Script to initialize a namespace in OpenShift.
+# Ex: init-namespace.sh <namespace> <gitRef> [token]
+
+PROJECT_NAME=dti-backup-git
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+action=$1
+server=$2
+namespace=$2
+gitRef=$3
+token=$4
+
+computeObjectName() {
+    gitRef=$1
+    objectName="$PROJECT_NAME-$gitRef"
+    objectName=${objectName//\//-} #Remplace les slash
+    objectName=${objectName//_/-} #Remplace les underscores
+}
+
+onError()
+{
+	echo -e "${RED}Script failed.${NC}"
+	exit 1
+}
+
+if [ $action = "toto" ]; then
+    computeObjectName master_asd/asdf
+    echo $objectName
+else
+    echo "No"
+fi
+
+echo -e "${GREEN}Script succeeded.${NC}"
+
+
