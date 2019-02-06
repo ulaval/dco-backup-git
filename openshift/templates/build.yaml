@@ -17,13 +17,16 @@ objects:
     name: "${NAME}"
     annotations:
       description: Keeps track of changes in the application image
+  spec:
+    lookupPolicy:
+      local: true #Pour permettre la résolution de l'image par le CronJob
 - apiVersion: v1
   kind: BuildConfig
   metadata:
+    name: "${NAME}"
     annotations:
       description: Defines how to build the application
       template.alpha.openshift.io/wait-for-ready: 'true'
-    name: "${NAME}"
   spec:
     source:
       type: Git
@@ -51,18 +54,21 @@ parameters:
   displayName: Name
   description: The name assigned to all of the frontend objects defined in this template.
   required: true
-  value: dti-backup-git
+  value: dti-backup-git-master
+
 - name: GIT_URI
   displayName: Git Repository URI
   description: The URI of the Git repository.
   required: true
   value: https://github.com/ulaval/dti-backup-git.git
+
 - name: GIT_REF
   displayName: Git Reference
   description: Set this to a branch name, tag or other ref of your repository if you
     are not using the default branch.
   required: true
   value: master
+
 - name: GITHUB_WEBHOOK_SECRET
   displayName: GitHub Webhook Secret
   description: Github trigger secret.  A difficult to guess string encoded as part

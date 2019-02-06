@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Template
+labels: {}
+metadata:
+  annotations:
+    description: Template pour mettre en place la tâche planifiée.
+    iconClass: icon-nodejs
+    openshift.io/provider-display-name: Université Laval
+    template.openshift.io/bindable: 'false'
+  name: dti-backup-git
+objects:
+- apiVersion: batch/v1beta1
+  kind: CronJob
+  metadata:
+    name: "${NAME}"
+  spec:
+    schedule: "${SCHEDULE}"
+    concurrencyPolicy: Forbid
+    jobTemplate:
+      spec:
+        template:
+          spec:
+            containers:
+            - name: "${NAME}"
+              image: dti-backup-git-master:latest
+              #command: ["perl",  "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+            restartPolicy: Never
+
+parameters:
+- name: NAME
+  displayName: Name
+  description: The name assigned to the job.
+  required: true
+
+- name: SCHEDULE
+  displayName: Schedule
+  description: The CRON to run the job
+  required: true

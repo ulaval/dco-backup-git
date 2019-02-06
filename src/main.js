@@ -3,4 +3,5 @@ const logger = require('./logger');
 
 backupGit.main(process.argv).catch(e => {
     logger.error('Backup failed.', e);
+    process.exit(1);
 });
