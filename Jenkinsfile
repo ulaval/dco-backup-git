@@ -18,7 +18,10 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
+        stage('build + tests') {
+            agent {
+                docker { image 'node:8.15.0-alpine' }
+            }
             steps {
                 sh "npm ci"
                 sh "npm run test"
@@ -26,7 +29,7 @@ pipeline {
             }
         }
 
-        stage('Construire image docker') {
+        stage('docker build') {
             steps {
                 sh """
                     docker build . \
@@ -36,7 +39,7 @@ pipeline {
             }
         }
 
-        stage('Publier image docker dans le repo') {
+        stage('docker push') {
             steps {
                 withDockerRegistry(url: DOCKER_REPOSITORY_URL, credentialsId: 'artifactory-docker-registry-credentials') {
                     sh "docker push ${DOCKER_REPOSITORY}/${IMAGE_NAME}:latest"
