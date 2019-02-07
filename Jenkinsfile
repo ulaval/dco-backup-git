@@ -21,8 +21,10 @@ pipeline {
     stages {
         stage('build + tests') {
             agent {
-                docker { image 'node:8.15.0-alpine' }
-                reuseNode true
+                docker {
+                    image 'node:8.15.0-alpine'
+                    reuseNode true
+                }
             }
             steps {
                 sh "npm ci"
