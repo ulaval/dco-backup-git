@@ -18,6 +18,14 @@ pipeline {
     }
 
     stages {
+        stage('Build') {
+            steps {
+                sh "npm ci"
+                sh "npm run test"
+                sh "npm run build"
+            }
+        }
+
         stage('Construire image docker') {
             steps {
                 sh """
