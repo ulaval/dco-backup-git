@@ -42,8 +42,6 @@ pipeline {
             envoyerNotifications currentBuild.result
 
             supprimerImageDocker nom: "${DOCKER_REPOSITORY}/${IMAGE_NAME}:latest"
-
-            deleteDir()
         }
     }
 }
