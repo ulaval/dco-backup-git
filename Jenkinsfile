@@ -12,7 +12,7 @@ pipeline {
     }
 
     environment {
-        DOCKER_REPOSITORY = 'docker-local.maven.ulaval.ca/ena2'
+        DOCKER_REPOSITORY = 'docker-local.maven.ulaval.ca/dti'
         DOCKER_REPOSITORY_URL = 'https://docker-local.maven.ulaval.ca/v2'
         IMAGE_NAME = 'dti-backup-git'
         npm_config_cache = 'npm-cache' // Solves: https://stackoverflow.com/questions/42743201/npm-install-fails-in-jenkins-pipeline-in-docker/42957034
