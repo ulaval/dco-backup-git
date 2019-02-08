@@ -1,0 +1,31 @@
+#!/bin/sh
+# Script to initialize a namespace so that the namespace can download images from artifactory.
+# Ex: ./new-build <server> <namespace> <gitRef> [token]
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+server=$1
+namespace=$2
+token=$7
+
+onError()
+{
+	echo -e "${RED}Script failed.${NC}"
+	exit 1
+}
+
+#echo "Deleting jenkins role binding..."
+oc delete rolebinding jenkins_edit --ignore-not-found=true -s=$server -n=$namespace --token=$token || onError
+
+echo "Deleting jenkins service account..."
+oc delete sa jenkins --ignore-not-found=true -s=$server -n=$namespace --token=$token || onError
+#oc adm policy remove-user jenkins -s=$server -n=$namespace --token=$token || onError
+
+echo "Deleting secret for Artifactory..."
+oc delete secret artifactory --ignore-not-found=true -s=$server -n=$namespace --token=$token || onError
+
+echo -e "${GREEN}Script succeeded.${NC}"
+
+

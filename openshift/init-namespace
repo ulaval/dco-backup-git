@@ -1,0 +1,37 @@
+#!/bin/sh
+# Script to initialize a namespace so that the namespace can download images from artifactory.
+# Ex: ./new-build <server> <namespace> <gitRef> [token]
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+server=$1
+namespace=$2
+dockerServer=$3
+dockerUsername=$4
+dockerPassword=$5
+dockerEmail=$6
+token=$7
+
+onError()
+{
+	echo -e "${RED}Script failed.${NC}"
+	exit 1
+}
+
+echo "Creating secret for Artifactory..."
+oc create secret docker-registry artifactory --docker-server=$dockerServer --docker-username=$dockerUsername --docker-password=$dockerPassword --docker-email=$dockerEmail -s=$server -n=$namespace --token=$token || onError
+
+echo "Setting default secret for pulling..."
+oc secrets link default artifactory --for=pull -s=$server -n=$namespace --token=$token || onError
+
+echo Creating jenkins service account...
+oc create sa jenkins -s=$server -n=$namespace --token=$token || onError
+
+echo Granting edit role to jenkins service account...
+oc policy add-role-to-user edit --rolebinding-name=jenkins_edit -z jenkins -s=$server -n=$namespace --token=$token || onError
+
+echo -e "${GREEN}Script succeeded.${NC}"
+
+
