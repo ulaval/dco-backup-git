@@ -11,11 +11,20 @@ pipeline {
         )
     }
 
+    parameters {
+        string(name: 'DOCKER_REGISTRY_HOST', defaultValue: 'docker-local.maven.ulaval.ca')
+
+        string(name: 'DOCKER_REGISTRY_CREDS_ID', defaultValue: 'artifactory-docker-registry-credentials')
+    }
+
     environment {
-        DOCKER_REPOSITORY = 'docker-local.maven.ulaval.ca/dti'
-        DOCKER_REPOSITORY_URL = 'https://docker-local.maven.ulaval.ca/v2'
-        IMAGE_NAME = 'dti-backup-git'
-        npm_config_cache = 'npm-cache' // Solves: https://stackoverflow.com/questions/42743201/npm-install-fails-in-jenkins-pipeline-in-docker/42957034
+        DOCKER_REPOSITORY = '${params.DOCKER_REGISTRY_HOST}/'
+        DOCKER_REPOSITORY_URL = 'https://${params.DOCKER_REGISTRY_HOST}/v2'
+        DOCKER_REGISTRY_CREDS_ID = params.DOCKER_REGISTRY_CREDS_ID
+        DOCKER_IMAGE_TAG = "${DOCKER_REPOSITORY}/dti/dti-backup-git:latest"
+
+        // Solves: https://stackoverflow.com/questions/42743201/npm-install-fails-in-jenkins-pipeline-in-docker/42957034
+        npm_config_cache = 'npm-cache'
     }
 
     stages {
@@ -28,25 +37,21 @@ pipeline {
             }
             steps {
                 sh "npm ci"
-                sh "npm run test"
                 sh "npm run build"
+                sh "npm run test"
             }
         }
 
         stage('docker build') {
             steps {
-                sh """
-                    docker build . \
-                    --tag ${DOCKER_REPOSITORY}/${IMAGE_NAME}:latest \
-                    --no-cache --rm
-                """
+                sh """docker build . --tag ${DOCKER_IMAGE_TAG} --no-cache --rm"""
             }
         }
 
         stage('docker push') {
             steps {
-                withDockerRegistry(url: DOCKER_REPOSITORY_URL, credentialsId: 'artifactory-docker-registry-credentials') {
-                    sh "docker push ${DOCKER_REPOSITORY}/${IMAGE_NAME}:latest"
+                withDockerRegistry(url: DOCKER_REPOSITORY_URL, credentialsId: DOCKER_REGISTRY_CREDS_ID) {
+                    sh "docker push ${DOCKER_IMAGE_TAG}"
                 }
             }
         }
@@ -54,9 +59,22 @@ pipeline {
 
     post {
         always {
-            envoyerNotifications currentBuild.result
+            // Cleaning up docker images
+            sh "docker rmi ${DOCKER_IMAGE_TAG}"
+        }
 
-            supprimerImageDocker nom: "${DOCKER_REPOSITORY}/${IMAGE_NAME}:latest"
+        unstable {
+            mail (to: 'frederic.poliquin@dti.ulaval.ca',
+                subject: "Build of ${env.JOB_NAME}[${env.BUILD_NUMBER}] is unstable :(",
+                body: "<p><a href=\"${env.BUILD_URL}\">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>",
+                recipientProviders: [[$class: 'DevelopersRecipientProvider']])
+        }
+
+        failure {
+            mail (to: 'frederic.poliquin@dti.ulaval.ca',
+                subject: "Build of ${env.JOB_NAME}[${env.BUILD_NUMBER}] failed :(",
+                body: "<p><a href=\"${env.BUILD_URL}\">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>",
+                recipientProviders: [[$class: 'DevelopersRecipientProvider']])
         }
     }
 }
