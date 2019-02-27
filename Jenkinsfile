@@ -18,9 +18,9 @@ pipeline {
     }
 
     environment {
-        DOCKER_REPOSITORY = '${params.DOCKER_REGISTRY_HOST}/'
-        DOCKER_REPOSITORY_URL = 'https://${params.DOCKER_REGISTRY_HOST}/v2'
-        DOCKER_REGISTRY_CREDS_ID = params.DOCKER_REGISTRY_CREDS_ID
+        DOCKER_REPOSITORY = "${params.DOCKER_REGISTRY_HOST}/"
+        DOCKER_REPOSITORY_URL = "https://${params.DOCKER_REGISTRY_HOST}/v2"
+        DOCKER_REGISTRY_CREDS_ID = "${params.DOCKER_REGISTRY_CREDS_ID}"
         DOCKER_IMAGE_TAG = "${DOCKER_REPOSITORY}/dti/dti-backup-git:latest"
 
         // Solves: https://stackoverflow.com/questions/42743201/npm-install-fails-in-jenkins-pipeline-in-docker/42957034
