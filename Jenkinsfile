@@ -64,14 +64,14 @@ pipeline {
         }
 
         unstable {
-            mail (to: 'frederic.poliquin@dti.ulaval.ca',
+            emailext (to: 'frederic.poliquin@dti.ulaval.ca',
                 subject: "Build of ${env.JOB_NAME}[${env.BUILD_NUMBER}] is unstable :(",
                 body: "<p><a href=\"${env.BUILD_URL}\">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>",
                 recipientProviders: [[$class: 'DevelopersRecipientProvider']])
         }
 
         failure {
-            mail (to: 'frederic.poliquin@dti.ulaval.ca',
+            emailext (to: 'frederic.poliquin@dti.ulaval.ca',
                 subject: "Build of ${env.JOB_NAME}[${env.BUILD_NUMBER}] failed :(",
                 body: "<p><a href=\"${env.BUILD_URL}\">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>",
                 recipientProviders: [[$class: 'DevelopersRecipientProvider']])
