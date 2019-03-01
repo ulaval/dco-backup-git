@@ -1,6 +1,7 @@
 #!/bin/sh
 # Script to initialize a namespace so that the namespace can download images from artifactory.
-# Ex: ./new-build <server> <namespace> <gitRef> [token]
+# Format: ./clear-namespace <server> <namespace> [token]
+# Ex: ./clear-namespace https://console-pca.svc.ulaval.ca dti-backup-git-pr01 xxx
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -8,7 +9,7 @@ NC='\033[0m' # No Color
 
 server=$1
 namespace=$2
-token=$7
+token=$3
 
 onError()
 {
@@ -16,7 +17,7 @@ onError()
 	exit 1
 }
 
-#echo "Deleting jenkins role binding..."
+echo "Deleting jenkins role binding..."
 oc delete rolebinding jenkins_edit --ignore-not-found=true -s=$server -n=$namespace --token=$token || onError
 
 echo "Deleting jenkins service account..."
