@@ -1,7 +1,7 @@
 #!/bin/sh
 # Script to initialize a namespace so that the namespace can download images from artifactory.
-# Format: ./clear-namespace <server> <namespace> [token]
-# Ex: ./clear-namespace https://console-pca.svc.ulaval.ca dti-backup-git-pr01 xxx
+# Format: ./namespace-clear <server> <namespace> [token]
+# Ex: ./namespace-clear https://console-pca.svc.ulaval.ca dti-backup-git-pr01 xxx
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'

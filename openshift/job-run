@@ -1,0 +1,36 @@
+#!/bin/sh
+# Script to initialize a build of this code in Openshift.
+# Ex: ./job-run <server> <namespace> [token]
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+server=$1
+namespace=$2
+token=$3
+
+now=`date '+%Y-%m-%d-%H-%M-%S'`
+objectName="dti-backup-git-$now"
+
+onError()
+{
+	echo -e "${RED}Script failed.${NC}"
+	exit 1
+}
+
+echo "Creating pod..."
+oc new-app -s=$server -n=$namespace --token=$token \
+    -f=templates/job.yaml --name=$objectName -l=sys=dti-backup-git -p=NAME=$objectName || onError
+
+#oc logs -s=$server -n=$namespace bc/$objectName --follow || onError
+#count=$(oc get -s=$server -n=$namespace build/$objectName-1 -o yaml | grep "phase: Complete" | wc -l)
+
+#if [ $count != 1 ]
+#then
+#    onError
+#fi
+
+echo -e "${GREEN}Script succeeded.${NC}"
+
+
