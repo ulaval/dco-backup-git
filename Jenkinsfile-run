@@ -1,0 +1,46 @@
+#!/usr/bin/env groovy
+
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+
+        buildDiscarder(
+            logRotator(daysToKeepStr: '7')
+        )
+    }
+
+    parameters {
+        string(name: 'OPENSHIFT_CREDS_ID', defaultValue: 'artifactory-docker-registry-credentials')
+    }
+
+    environment {
+        OPENSHIFT_CREDS_ID = "${OPENSHIFT_CREDS_ID}"
+    }
+
+    stages {
+        stage('run backup') {
+            agent {
+                docker {
+                    image 'docker-local.maven.ulaval.ca/ena2/ena2-openshift-client:latest'
+                    reuseNode true
+                }
+            }
+            steps {
+                withCredentials([string(credentialsId: OPENSHIFT_CREDS_ID, variable: 'TOKEN')]) {
+                    sh 'cd openshift && echo "Running with ${TOKEN}..."'
+                    //sh 'cd openshift && ./job-run https://console-pca.svc.ulaval.ca dti-backup-git-pr01 ${TOKEN}'
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+            emailext (to: 'frederic.poliquin@dti.ulaval.ca',
+                subject: "Backup of git failed :(",
+                body: "<p><a href=\"${env.BUILD_URL}\">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>"
+        }
+    }
+}
