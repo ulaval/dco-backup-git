@@ -18,19 +18,30 @@ objects:
       containers:
         - name: "${NAME}"
           image: "${IMAGE}"
-          command:
-            [
-              "sh",
-              "-c",
-              "trap : TERM INT; (while true; do sleep 100; done) & wait",
-            ]
+          # command:
+          #   [
+          #     "sh",
+          #     "-c",
+          #     "trap : TERM INT; (while true; do sleep 100; done) & wait",
+          #   ]
+          command: ["node", "dti-backup-git.js", "-conf=/config/config.json"]
           volumeMounts:
-            - mountPath: "/backup"
-              name: "backup-folder"
+            - name: "backup-folder"
+              mountPath: "/backup"
+
+            - name: config
+              mountPath: /config
+              readOnly: true
+          resources:
+            limits:
+              memory: 1Gi
       volumes:
         - name: "backup-folder"
           persistentVolumeClaim:
             claimName: "dti-backup-git"
+        - name: config
+          secret:
+            secretName: config-dti-backup-git
 
 parameters:
   - name: NAME

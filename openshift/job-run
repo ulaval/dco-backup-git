@@ -1,5 +1,6 @@
 #!/bin/sh
-# Script to initialize a build of this code in Openshift.
+# Script to start a backup on Openshift
+# This script creates a Pod linked to a persistent volume so that the backup can occur.
 # Ex: ./job-run <server> <namespace> [token]
 
 RED='\033[0;31m'
@@ -10,6 +11,7 @@ server=$1
 namespace=$2
 token=$3
 
+# Adding timestamp to pod name
 now=`date '+%Y-%m-%d-%H-%M-%S'`
 objectName="dti-backup-git-$now"
 
@@ -23,14 +25,25 @@ echo "Creating pod..."
 oc new-app -s=$server -n=$namespace --token=$token \
     -f=templates/job.yaml --name=$objectName -l=sys=dti-backup-git -p=NAME=$objectName || onError
 
-#oc logs -s=$server -n=$namespace bc/$objectName --follow || onError
-#count=$(oc get -s=$server -n=$namespace build/$objectName-1 -o yaml | grep "phase: Complete" | wc -l)
+echo "Waiting for pod to start..."
+status=$(oc get pod/$objectName --template={{.status.phase}})
+while [ "$status" == "Pending" ]
+do
+    sleep 1
+    status=$(oc get pod/$objectName --template={{.status.phase}})
+done
 
-#if [ $count != 1 ]
-#then
-#    onError
-#fi
+echo "New status is $status"
 
-echo -e "${GREEN}Script succeeded.${NC}"
+# Showing pod logs in console
+oc logs -s=$server -n=$namespace pod/$objectName --follow || onError
 
+status=$(oc get pod/$objectName --template={{.status.phase}})
 
+if [ "$status" == "Succeeded" ]; then
+    echo -e "${GREEN}Script succeeded.${NC}"
+    exit 0
+fi
+
+echo -e "${RED}Script failed with status $status.${NC}"
+exit 1

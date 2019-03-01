@@ -16,6 +16,6 @@ onError()
 	exit 1
 }
 
-oc delete -s=$server -n=$namespace --token=$token --ignore-not-found=true -l=sys=dti-backup-git all || goto onerror
+oc delete -s=$server -n=$namespace --token=$token --ignore-not-found=true --force -l=sys=dti-backup-git all || goto onerror
 
 echo -e "${GREEN}Script succeeded.${NC}"
