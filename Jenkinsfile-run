@@ -29,7 +29,7 @@ pipeline {
             }
             steps {
                 withCredentials([string(credentialsId: OPENSHIFT_CREDS_ID, variable: 'TOKEN')]) {
-                    sh 'cd openshift && ./openshift/job-run.sh https://console-pca.svc.ulaval.ca dti-backup-git-pr01 ${TOKEN}'
+                    sh 'cd openshift && ./job-run.sh https://console-pca.svc.ulaval.ca dti-backup-git-pr01 ${TOKEN}'
                 }
             }
         }
