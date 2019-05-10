@@ -26,19 +26,19 @@ oc new-app --server=$server --namespace=$namespace --token=$token \
     -f=templates/job.yaml --name=$objectName -l=sys=dti-backup-git -p=NAME=$objectName || onError
 
 echo "Waiting for pod to start..."
-status=$(oc get pod/$objectName --template={{.status.phase}})
+status=$(oc get pod/$objectName --template={{.status.phase}} --server=$server --namespace=$namespace --token=$token)
 while [ "$status" == "Pending" ]
 do
     sleep 1
-    status=$(oc get pod/$objectName --template={{.status.phase}})
+    status=$(oc get pod/$objectName --template={{.status.phase}} --server=$server --namespace=$namespace --token=$token)
 done
 
 echo "New status is $status"
 
 # Showing pod logs in console
-oc logs -s=$server -n=$namespace pod/$objectName --follow || onError
+oc logs --server=$server --namespace=$namespace --token=$token pod/$objectName --follow || onError
 
-status=$(oc get pod/$objectName --template={{.status.phase}})
+status=$(oc get pod/$objectName --template={{.status.phase}} --server=$server --namespace=$namespace --token=$token)
 
 if [ "$status" == "Succeeded" ]; then
     echo -e "${GREEN}Script succeeded.${NC}"
