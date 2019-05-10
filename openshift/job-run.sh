@@ -22,7 +22,7 @@ onError()
 }
 
 echo "Creating pod..."
-oc new-app -s=$server -n=$namespace --token=$token \
+oc new-app --server=$server --namespace=$namespace --token=$token \
     -f=templates/job.yaml --name=$objectName -l=sys=dti-backup-git -p=NAME=$objectName || onError
 
 echo "Waiting for pod to start..."
