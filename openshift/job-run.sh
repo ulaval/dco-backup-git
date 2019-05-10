@@ -27,7 +27,7 @@ oc new-app --server=$server --namespace=$namespace --token=$token \
 
 echo "Waiting for pod to start..."
 status=$(oc get pod/$objectName --template={{.status.phase}} --server=$server --namespace=$namespace --token=$token)
-while [ "$status" == "Pending" ]
+while [ $status == "Pending" ]
 do
     sleep 1
     status=$(oc get pod/$objectName --template={{.status.phase}} --server=$server --namespace=$namespace --token=$token)
