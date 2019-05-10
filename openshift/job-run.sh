@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Script to start a backup on Openshift
 # This script creates a Pod linked to a persistent volume so that the backup can occur.
 # Ex: ./job-run <server> <namespace> [token]
