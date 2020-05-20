@@ -13,7 +13,7 @@ pipeline {
 
     environment {
         DOCKER_REPOSITORY = "docker-local.maven.ulaval.ca"
-        DOCKER_REPOSITORY_URL = "https://${params.DOCKER_REGISTRY_HOST}/v2"
+        DOCKER_REPOSITORY_URL = "https://${DOCKER_REPOSITORY}/v2"
         DOCKER_REGISTRY_CREDS_ID = "docker"
         DOCKER_IMAGE_TAG = "${DOCKER_REPOSITORY}/dco/dco-backup-git:latest"
 
