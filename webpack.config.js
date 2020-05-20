@@ -6,6 +6,6 @@ module.exports = {
     target: 'node',
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'dti-backup-git.js'
+        filename: 'dco-backup-git.js'
     }
 };

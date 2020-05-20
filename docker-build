@@ -1,2 +1,2 @@
 #!/bin/sh
-docker build --rm -t dti-backup-git .
+docker build --rm -t dco-backup-git .

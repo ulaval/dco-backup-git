@@ -11,12 +11,10 @@ pipeline {
         )
     }
 
-    parameters {
-        string(name: 'OPENSHIFT_CREDS_ID', defaultValue: 'DTI_BACKUP_GIT_OPENSHIFT_TOKEN')
-    }
-
     environment {
-        OPENSHIFT_CREDS_ID = "${OPENSHIFT_CREDS_ID}"
+        OPENSHIFT_SERVER = "https://console-pca.svc.ulaval.ca"
+        OPENSHIFT_PROJECT = "dti-backup-git-pr01"
+        OPENSHIFT_CREDS_ID = "openshift"
     }
 
     stages {
@@ -29,7 +27,7 @@ pipeline {
             }
             steps {
                 withCredentials([string(credentialsId: OPENSHIFT_CREDS_ID, variable: 'TOKEN')]) {
-                    sh 'cd openshift && /bin/bash ./job-run.sh "https://console-pca.svc.ulaval.ca" dti-backup-git-pr01 ${TOKEN}'
+                    sh 'cd openshift && /bin/bash ./job-run.sh ${OPENSHIFT_SERVER} ${OPENSHIFT_PROJECT} ${TOKEN}'
                 }
             }
         }

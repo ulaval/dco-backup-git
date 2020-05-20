@@ -6,4 +6,4 @@ WORKDIR /usr/src/app
 
 COPY dist .
 
-ENTRYPOINT [ "node", "dti-backup-git.js" ]
+ENTRYPOINT [ "node", "dco-backup-git.js" ]

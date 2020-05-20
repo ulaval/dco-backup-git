@@ -13,7 +13,7 @@ token=$3
 
 # Adding timestamp to pod name
 now=`date '+%Y-%m-%d-%H-%M-%S'`
-objectName="dti-backup-git-$now"
+objectName="dco-backup-git-$now"
 
 onError()
 {
@@ -23,7 +23,7 @@ onError()
 
 echo "Creating pod..."
 oc new-app --server=$server --namespace=$namespace --token=$token \
-    -f=templates/job.yaml --name=$objectName -l=sys=dti-backup-git -p=NAME=$objectName || onError
+    -f=templates/job.yaml --name=$objectName -l=sys=dco-backup-git -p=NAME=$objectName || onError
 
 echo "Waiting for pod to start..."
 status=$(oc get pod/$objectName --template={{.status.phase}} --server=$server --namespace=$namespace --token=$token)

@@ -1,2 +1,2 @@
 #!/bin/sh
-docker run dti-backup-git $@
+docker run dco-backup-git $@

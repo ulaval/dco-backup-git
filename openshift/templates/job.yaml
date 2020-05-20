@@ -7,7 +7,7 @@ metadata:
     iconClass: icon-nodejs
     openshift.io/provider-display-name: Université Laval
     template.openshift.io/bindable: "false"
-  name: dti-backup-git
+  name: dco-backup-git
 objects:
   - apiVersion: v1
     kind: Pod
@@ -24,7 +24,7 @@ objects:
           #     "-c",
           #     "trap : TERM INT; (while true; do sleep 100; done) & wait",
           #   ]
-          command: ["node", "dti-backup-git.js", "-conf=/config/config.json"]
+          command: ["node", "dco-backup-git.js", "-conf=/config/config.json"]
           volumeMounts:
             - name: "backup-folder"
               mountPath: "/backup"
@@ -51,4 +51,4 @@ parameters:
   - name: IMAGE
     displayName: Docker Image
     description: The Docker image to use to run the job.
-    value: docker-local.maven.ulaval.ca/dti/dti-backup-git:latest
+    value: docker-local.maven.ulaval.ca/dco/dco-backup-git:latest
