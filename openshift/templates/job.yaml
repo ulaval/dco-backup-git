@@ -51,4 +51,4 @@ parameters:
   - name: IMAGE
     displayName: Docker Image
     description: The Docker image to use to run the job.
-    value: docker-local.maven.ulaval.ca/dco/dco-backup-git:latest
+    value: docker-local.maven.ulaval.ca/fondation/dco/dco-backup-git:latest
