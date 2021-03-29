@@ -21,7 +21,7 @@ pipeline {
         stage('run backup') {
             agent {
                 docker {
-                    image 'docker-local.maven.ulaval.ca/ena2/ena2-openshift-client:18.10.16-1'
+                    image 'docker-local.maven.ulaval.ca/enseignement/ena2/ena2-openshift-client:20.06.05-4'
                     reuseNode true
                 }
             }
